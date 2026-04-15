@@ -5,13 +5,12 @@ const prisma = new PrismaClient();
 
 exports.generateOrientation = async (req, res) => {
   try {
-    const { userInput, sourceType = 'direct' } = req.body;
+    const { userInput, sourceType = 'direct', chatSessionId } = req.body;
 
     if (!userInput || userInput.trim().length < 3) {
       return res.status(400).json({ error: 'Veuillez décrire votre objectif' });
     }
 
-    // Récupérer le profil complet
     const profile = await prisma.profile.findUnique({
       where: { userId: req.userId },
       include: { grades: true, mobilityZones: true }
@@ -21,15 +20,17 @@ exports.generateOrientation = async (req, res) => {
       return res.status(404).json({ error: 'Profil introuvable. Complétez d\'abord votre profil.' });
     }
 
-    // Créer la requête en base
     const request = await prisma.orientationRequest.create({
-      data: { userId: req.userId, userInput: userInput.trim(), sourceType }
+      data: {
+        userId: req.userId,
+        userInput: userInput.trim(),
+        sourceType,
+        chatSessionId: chatSessionId || null
+      }
     });
 
-    // Générer les recommandations via l'IA
     const result = await orientationService.generateRecommendations(userInput, profile);
 
-    // Sauvegarder le résultat
     const saved = await prisma.orientationResult.create({
       data: {
         requestId: request.id,
@@ -65,6 +66,7 @@ exports.getHistory = async (req, res) => {
       id: r.id,
       userInput: r.userInput,
       sourceType: r.sourceType,
+      chatSessionId: r.chatSessionId || null,
       createdAt: r.createdAt,
       result: r.results[0] ? {
         idealPath: JSON.parse(r.results[0].idealPath),

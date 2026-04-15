@@ -134,7 +134,7 @@ PROFIL DE L'ÉTUDIANT :
 - Formation : ${profile.formation || 'Non renseignée'}
 - Niveau : ${profile.level || 'Non renseigné'}
 - Filière : ${profile.filiere || 'Non renseignée'}
-- Budget maximum : ${profile.budgetMax ? profile.budgetMax + '€/an' : 'Non renseigné'}
+- Budget maximum études : ${profile.budgetMax ? profile.budgetMax + '€/an' : 'Non renseigné'}
 - Mobilité : ${mobilityInfo}
 - Notes : ${gradesInfo}
   `.trim();

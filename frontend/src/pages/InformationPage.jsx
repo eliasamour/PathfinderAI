@@ -166,7 +166,7 @@ export default function InformationPage() {
               <div className="card">
                 <h2 className="section-title">Budget annuel maximum</h2>
                 <div className="input-group">
-                  <label className="input-label">Budget études + logement (€/an)</label>
+                  <label className="input-label">Budget études (€/an)</label>
                   <div style={{ position: 'relative' }}>
                     <input
                       type="number" className="input" placeholder="Ex: 12000"
@@ -180,7 +180,7 @@ export default function InformationPage() {
                     }}>€/an</span>
                   </div>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
-                    Inclut les frais de scolarité, le logement, la vie courante. Laisse vide si pas de contrainte.
+                    Frais de scolarité uniquement. Laisse vide si pas de contrainte.
                   </p>
                 </div>
               </div>

@@ -92,6 +92,7 @@ model OrientationRequest {
   userId     String
   userInput  String
   sourceType String   @default("direct")
+  chatSessionId String?
   createdAt  DateTime @default(now())
 
   user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
