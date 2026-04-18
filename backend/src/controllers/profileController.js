@@ -72,7 +72,7 @@ exports.updateProfile = async (req, res) => {
 
     // Mise à jour des notes si fournies
     if (grades && Array.isArray(grades)) {
-      await prisma.academicGrade.deleteMany({ where: { profileId: profile.id, source: 'manual' } });
+      await prisma.academicGrade.deleteMany({ where: { profileId: profile.id } });
       if (grades.length > 0) {
         await prisma.academicGrade.createMany({
           data: grades.map(g => ({

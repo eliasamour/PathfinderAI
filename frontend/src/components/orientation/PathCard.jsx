@@ -1,4 +1,4 @@
-import { Clock, Euro, ChevronDown, ChevronUp, School } from 'lucide-react';
+import { Clock, Euro, ChevronDown, ChevronUp, School, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 const DIFFICULTY_COLORS = {
@@ -25,9 +25,7 @@ export default function PathCard({ path, isIdeal = false, index }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            {isIdeal && (
-              <span className="badge badge-blue" style={{ fontSize: 11 }}>Parcours idéal</span>
-            )}
+            {isIdeal && <span className="badge badge-blue" style={{ fontSize: 11 }}>Parcours idéal</span>}
             {!isIdeal && index !== undefined && (
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Alternative {index}</span>
             )}
@@ -42,7 +40,7 @@ export default function PathCard({ path, isIdeal = false, index }) {
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{path.description}</p>
         </div>
 
-        {/* Accessibility score */}
+        {/* Score */}
         <div style={{ textAlign: 'center', flexShrink: 0 }}>
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
@@ -56,15 +54,15 @@ export default function PathCard({ path, isIdeal = false, index }) {
         </div>
       </div>
 
-      {/* Meta info */}
+      {/* Meta */}
       <div style={{ display: 'flex', gap: 20, marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--text-secondary)' }}>
           <Clock size={14} color="var(--text-muted)" />
-          <span><strong style={{ color: 'var(--text-primary)' }}>{path.totalDuration}</strong></span>
+          <strong style={{ color: 'var(--text-primary)' }}>{path.totalDuration}</strong>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--text-secondary)' }}>
           <Euro size={14} color="var(--text-muted)" />
-          <span>{path.estimatedCost}</span>
+          {path.estimatedCost}
         </div>
       </div>
 
@@ -109,28 +107,74 @@ export default function PathCard({ path, isIdeal = false, index }) {
                     width: 28, height: 28, borderRadius: '50%',
                     background: 'var(--blue-light)', border: '1px solid var(--blue)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, fontWeight: 700, color: '#93C5FD', flexShrink: 0, marginTop: 2
+                    fontSize: 12, fontWeight: 700, color: '#93C5FD',
+                    flexShrink: 0, marginTop: 2
                   }}>
                     {i + 1}
                   </div>
+
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>{step.formation}</span>
                       <span className="badge badge-blue" style={{ fontSize: 11 }}>{step.level}</span>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{step.duration}</span>
                     </div>
+
+                    {/* École + lien */}
                     {step.schools && step.schools.length > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <School size={12} color="var(--text-muted)" />
+                      <div style={{ marginBottom: 4 }}>
                         {step.schools.map((school, si) => (
-                          <span key={si} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                            {school}{si < step.schools.length - 1 ? ',' : ''}
-                          </span>
+                          <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                            <School size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{school}</span>
+                            {/* Lien site école (si dispo dans etabUrl) */}
+                            {step.etabUrl && si === 0 && (
+                              <a
+                                href={step.etabUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                                  fontSize: 11, color: '#93C5FD', fontWeight: 500,
+                                  textDecoration: 'none', padding: '1px 7px',
+                                  background: 'var(--blue-light)', borderRadius: 999,
+                                  border: '1px solid var(--blue)', flexShrink: 0
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                              >
+                                <ExternalLink size={10} />
+                                Site
+                              </a>
+                            )}
+                            {/* Lien Parcoursup si pas de site école */}
+                            {!step.etabUrl && step.parcoursupUrl && si === 0 && (
+                              <a
+                                href={step.parcoursupUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                                  fontSize: 11, color: '#93C5FD', fontWeight: 500,
+                                  textDecoration: 'none', padding: '1px 7px',
+                                  background: 'var(--blue-light)', borderRadius: 999,
+                                  border: '1px solid var(--blue)', flexShrink: 0
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                              >
+                                <ExternalLink size={10} />
+                                Parcoursup
+                              </a>
+                            )}
+                          </div>
                         ))}
                       </div>
                     )}
+
+                    {/* Coût */}
                     {step.cost && (
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                         Coût : {step.cost}
                       </div>
                     )}

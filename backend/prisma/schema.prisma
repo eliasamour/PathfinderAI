@@ -109,3 +109,21 @@ model OrientationResult {
 
   request OrientationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 }
+
+model Formation {
+  id             Int     @id @default(autoincrement())
+  gta            String  @unique
+  nom            String
+  typeFormation  String
+  filiere        String
+  etablissement  String
+  region         String
+  departement    String
+  commune        String
+  isPublic       Boolean
+  isApprentissage Boolean
+  ficheUrl       String?
+  lat            Float?
+  lon            Float?
+  etabUrl        String?
+}
