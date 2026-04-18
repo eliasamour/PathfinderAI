@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { PrismaClient } = require('@prisma/client');
 const auth = require('../middleware/auth');
 const { startSession, sendMessage, getSession } = require('../controllers/chatController');
-const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
@@ -18,6 +18,7 @@ router.get('/sessions', auth, async (req, res) => {
       orderBy: { createdAt: 'desc' },
       take: 5
     });
+
     res.json(sessions.map(s => ({
       ...s,
       messages: s.messages.map(m => ({

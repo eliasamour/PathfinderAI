@@ -9,7 +9,7 @@ import AddressAutocomplete from '../components/profile/AddressAutocomplete';
 
 const SECTIONS = [
   { id: 'academic', label: 'Parcours', icon: BookOpen },
-  { id: 'grades', label: 'Notes', icon: FileText },
+  { id: 'grades',   label: 'Notes',   icon: FileText },
   { id: 'constraints', label: 'Budget & Lieu', icon: Euro },
 ];
 
@@ -34,9 +34,9 @@ export default function InformationPage() {
         const { data } = await api.get('/profile');
         setProfile(prev => ({
           ...prev, ...data,
-          grades: data.grades || [],
-          mobilityZones: data.mobilityZones || [],
-          specialites: data.specialites || [],
+          grades:              data.grades || [],
+          mobilityZones:       data.mobilityZones || [],
+          specialites:         data.specialites || [],
           previousSpecialites: data.previousSpecialites || []
         }));
       } catch (err) {
@@ -64,16 +64,11 @@ export default function InformationPage() {
   const handleChange = (key, value) => {
     setProfile(p => {
       const updated = { ...p, [key]: value };
-
-      // Autosave avec debounce 2s
       if (!isFirstLoad.current) {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         setSaveStatus('saving');
-        debounceRef.current = setTimeout(() => {
-          saveProfile(updated);
-        }, 2000);
+        debounceRef.current = setTimeout(() => saveProfile(updated), 2000);
       }
-
       return updated;
     });
   };
@@ -116,8 +111,6 @@ export default function InformationPage() {
 
   return (
     <div className="page-container">
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
       <div className="flex-between" style={{ marginBottom: 28 }}>
         <div>
           <h1 className="page-title">Mon profil</h1>
@@ -135,7 +128,6 @@ export default function InformationPage() {
       </div>
 
       <div style={{ display: 'flex', gap: 24 }}>
-        {/* Sidebar */}
         <div style={{ width: 200, flexShrink: 0 }}>
           <div style={{ position: 'sticky', top: 84 }}>
             {SECTIONS.map(s => {
@@ -161,7 +153,6 @@ export default function InformationPage() {
           </div>
         </div>
 
-        {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {activeSection === 'academic' && (
             <div className="card">

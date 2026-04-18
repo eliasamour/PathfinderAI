@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+
 const prisma = new PrismaClient();
 
 const SEUILS_MOYENNES = {
@@ -35,7 +36,6 @@ const COUTS_ESTIMES = {
   'default': 0
 };
 
-// Synonymes : clé = ce que l'utilisateur tape, valeur = typeFormation exact dans Parcoursup
 const SYNONYMES_TYPE = {
   'cpge': 'CPGE',
   'classe préparatoire': 'CPGE',
@@ -65,7 +65,6 @@ const SYNONYMES_TYPE = {
   'licence': 'Licence',
 };
 
-// Mots-clés domaine : clé = ce que l'utilisateur tape, valeur = mots à chercher dans nom/filiere
 const SYNONYMES_DOMAINE = {
   'informatique': ['Informatique', 'SIO', 'NSI', 'numérique', 'développement'],
   'droit': ['Droit', 'juridique'],
@@ -89,24 +88,19 @@ const SYNONYMES_DOMAINE = {
 function resoudreSynonymes(userInput) {
   const inputLower = userInput.toLowerCase();
 
-  // 1. Chercher un type de formation exact
   let typeFormation = null;
   for (const [cle, type] of Object.entries(SYNONYMES_TYPE)) {
     if (inputLower.includes(cle)) {
       typeFormation = type;
-      break; // On prend le premier match
+      break;
     }
   }
 
-  // 2. Chercher des mots-clés de domaine
   const motsDomaine = [];
   for (const [cle, mots] of Object.entries(SYNONYMES_DOMAINE)) {
-    if (inputLower.includes(cle)) {
-      motsDomaine.push(...mots);
-    }
+    if (inputLower.includes(cle)) motsDomaine.push(...mots);
   }
 
-  // 3. Mots bruts en fallback (si rien trouvé)
   const motsBruts = inputLower
     .replace(/[^a-zàâçéèêëîïôûùüÿæœ\s]/g, ' ')
     .split(/\s+/)
@@ -122,33 +116,20 @@ function calculerScore(formation, profile, moyenneGenerale) {
   let score = 0;
   const details = [];
 
-  // 1. Adéquation académique (40 pts)
   const seuilType = SEUILS_MOYENNES[formation.typeFormation] || SEUILS_MOYENNES['default'];
 
   if (moyenneGenerale !== null) {
     const ecart = moyenneGenerale - seuilType;
-    if (ecart >= 1.5) {
-      score += 40;
-      details.push(`Niveau académique excellent (+40)`);
-    } else if (ecart >= 0) {
-      score += 28;
-      details.push(`Niveau académique suffisant (+28)`);
-    } else if (ecart >= -1.5) {
-      score += 15;
-      details.push(`Niveau académique limite (+15)`);
-    } else if (ecart >= -3) {
-      score += 7;
-      details.push(`Niveau académique insuffisant (+7)`);
-    } else {
-      score += 2;
-      details.push(`Niveau académique très insuffisant (+2)`);
-    }
+    if (ecart >= 1.5)       { score += 40; details.push('Niveau académique excellent (+40)'); }
+    else if (ecart >= 0)    { score += 28; details.push('Niveau académique suffisant (+28)'); }
+    else if (ecart >= -1.5) { score += 15; details.push('Niveau académique limite (+15)'); }
+    else if (ecart >= -3)   { score += 7;  details.push('Niveau académique insuffisant (+7)'); }
+    else                    { score += 2;  details.push('Niveau académique très insuffisant (+2)'); }
   } else {
     score += 20;
-    details.push(`Pas de notes renseignées (+20)`);
+    details.push('Pas de notes renseignées (+20)');
   }
 
-  // 2. Budget (30 pts)
   const coutEstime = formation.isPublic
     ? 0
     : (COUTS_ESTIMES[formation.typeFormation] || 2000);
@@ -157,16 +138,15 @@ function calculerScore(formation, profile, moyenneGenerale) {
     score += 20;
   } else if (profile.budgetMax >= coutEstime + 500) {
     score += 30;
-    details.push(`Budget largement compatible (+30)`);
+    details.push('Budget largement compatible (+30)');
   } else if (profile.budgetMax >= coutEstime) {
     score += 20;
-    details.push(`Budget juste compatible (+20)`);
+    details.push('Budget juste compatible (+20)');
   } else {
     score += 3;
-    details.push(`Budget insuffisant (+3)`);
+    details.push('Budget insuffisant (+3)');
   }
 
-  // 3. Mobilité (20 pts)
   if (profile.mobilityType === 'all') {
     score += 20;
   } else if (profile.mobilityType === 'none') {
@@ -174,23 +154,17 @@ function calculerScore(formation, profile, moyenneGenerale) {
   } else if (profile.mobilityType === 'specific' && profile.mobilityZones) {
     const match = profile.mobilityZones.some(z => {
       const val = z.value.toLowerCase();
-      if (z.zoneType === 'region') return (formation.region || '').toLowerCase().includes(val);
+      if (z.zoneType === 'region')      return (formation.region || '').toLowerCase().includes(val);
       if (z.zoneType === 'departement') return (formation.departement || '').toLowerCase().includes(val);
-      if (z.zoneType === 'ville') return (formation.commune || '').toLowerCase().includes(val);
+      if (z.zoneType === 'ville')       return (formation.commune || '').toLowerCase().includes(val);
       return false;
     });
     score += match ? 20 : 3;
   }
 
-  // 4. Public vs privé (10 pts)
   score += formation.isPublic ? 10 : 4;
 
-  return {
-    score: Math.min(100, Math.round(score)),
-    details,
-    seuilMoyenne: seuilType,
-    coutEstime
-  };
+  return { score: Math.min(100, Math.round(score)), details, seuilMoyenne: seuilType, coutEstime };
 }
 
 function getDifficulte(score) {
@@ -203,14 +177,9 @@ function getDifficulte(score) {
 async function rechercherFormations(userInput, profile, limit = 20) {
   const { typeFormation, motsDomaine, motsBruts } = resoudreSynonymes(userInput);
 
-  console.log('[Parcoursup] Type détecté:', typeFormation);
-  console.log('[Parcoursup] Mots domaine:', motsDomaine);
-  console.log('[Parcoursup] Mots bruts:', motsBruts);
-
   let whereFormation = {};
 
   if (typeFormation && motsDomaine.length > 0) {
-    // Cas idéal : type ET domaine — on filtre sur les deux
     whereFormation = {
       AND: [
         { typeFormation: { contains: typeFormation } },
@@ -218,17 +187,14 @@ async function rechercherFormations(userInput, profile, limit = 20) {
       ]
     };
   } else if (typeFormation) {
-    // Juste un type : toutes les formations de ce type
     whereFormation = { typeFormation: { contains: typeFormation } };
   } else if (motsDomaine.length > 0) {
-    // Juste un domaine : recherche dans nom et filière
     whereFormation = {
       OR: motsDomaine.map(m => ({
         OR: [{ nom: { contains: m } }, { filiere: { contains: m } }]
       }))
     };
   } else if (motsBruts.length > 0) {
-    // Fallback mots bruts avec AND pour plus de précision
     whereFormation = {
       AND: motsBruts.slice(0, 2).map(mot => ({
         OR: [{ nom: { contains: mot } }, { filiere: { contains: mot } }]
@@ -238,13 +204,12 @@ async function rechercherFormations(userInput, profile, limit = 20) {
     return [];
   }
 
-  // Filtre mobilité
   const mobilityFilter = [];
   if (profile.mobilityType === 'specific' && profile.mobilityZones?.length > 0) {
     for (const zone of profile.mobilityZones) {
-      if (zone.zoneType === 'region') mobilityFilter.push({ region: { contains: zone.value } });
+      if (zone.zoneType === 'region')      mobilityFilter.push({ region:      { contains: zone.value } });
       if (zone.zoneType === 'departement') mobilityFilter.push({ departement: { contains: zone.value } });
-      if (zone.zoneType === 'ville') mobilityFilter.push({ commune: { contains: zone.value } });
+      if (zone.zoneType === 'ville')       mobilityFilter.push({ commune:     { contains: zone.value } });
     }
   }
 
@@ -252,23 +217,16 @@ async function rechercherFormations(userInput, profile, limit = 20) {
     ? { AND: [whereFormation, { OR: mobilityFilter }, { NOT: { typeFormation: 'Formations professionnelles' } }] }
     : { AND: [whereFormation, { NOT: { typeFormation: 'Formations professionnelles' } }] };
 
-  const formations = await prisma.formation.findMany({
+  return prisma.formation.findMany({
     where: whereClause,
     take: limit * 3,
     orderBy: { nom: 'asc' }
   });
-
-  console.log('[Parcoursup] Formations trouvées:', formations.length);
-  if (formations.length > 0) {
-    console.log('[Parcoursup] Types:', [...new Set(formations.slice(0, 5).map(f => f.typeFormation))]);
-  }
-
-  return formations;
 }
 
 async function getFormationsScored(userInput, profile) {
   let moyenneGenerale = null;
-  if (profile.grades && profile.grades.length > 0) {
+  if (profile.grades?.length > 0) {
     const sum = profile.grades.reduce((acc, g) => acc + g.grade, 0);
     moyenneGenerale = parseFloat((sum / profile.grades.length).toFixed(2));
   }
@@ -276,19 +234,13 @@ async function getFormationsScored(userInput, profile) {
   const formations = await rechercherFormations(userInput, profile, 20);
   if (formations.length === 0) return [];
 
-  const scored = formations.map(f => {
-    const { score, details, seuilMoyenne, coutEstime } = calculerScore(f, profile, moyenneGenerale);
-    return { formation: f, score, details, seuilMoyenne, coutEstime, difficulte: getDifficulte(score) };
-  });
-
-  scored.sort((a, b) => b.score - a.score);
-
-  console.log('[Parcoursup] Top scores:');
-  scored.slice(0, 5).forEach(s => {
-    console.log(`  ${s.formation.typeFormation} | Score: ${s.score} (${s.difficulte}) | Seuil: ${s.seuilMoyenne} | Moyenne: ${moyenneGenerale}`);
-  });
-
-  return scored.slice(0, 10);
+  return formations
+    .map(f => {
+      const { score, details, seuilMoyenne, coutEstime } = calculerScore(f, profile, moyenneGenerale);
+      return { formation: f, score, details, seuilMoyenne, coutEstime, difficulte: getDifficulte(score) };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
 }
 
 module.exports = { getFormationsScored, calculerScore, getDifficulte };

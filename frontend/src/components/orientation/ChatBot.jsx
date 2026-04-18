@@ -52,7 +52,7 @@ export default function ChatBot({ onOrientationPrompt }) {
         setCompleted(true);
         if (data.orientationPrompt) setOrientationPrompt(data.orientationPrompt);
       }
-    } catch (err) {
+    } catch {
       setMessages(m => [...m, { role: 'assistant', content: 'Une erreur s\'est produite. Réessaie.', choices: [] }]);
     } finally {
       setLoading(false);
@@ -103,7 +103,10 @@ export default function ChatBot({ onOrientationPrompt }) {
                 border: `1px solid ${msg.role === 'user' ? 'var(--blue)' : 'var(--border)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
-                {msg.role === 'user' ? <User size={15} color="#93C5FD" /> : <Bot size={15} color="var(--text-secondary)" />}
+                {msg.role === 'user'
+                  ? <User size={15} color="#93C5FD" />
+                  : <Bot size={15} color="var(--text-secondary)" />
+                }
               </div>
               <div style={{
                 maxWidth: '70%', padding: '10px 14px',
@@ -117,7 +120,7 @@ export default function ChatBot({ onOrientationPrompt }) {
               </div>
             </div>
 
-            {msg.role === 'assistant' && msg.choices && msg.choices.length > 0 && !completed && i === messages.length - 1 && (
+            {msg.role === 'assistant' && msg.choices?.length > 0 && !completed && i === messages.length - 1 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10, marginLeft: 42 }}>
                 {msg.choices.map((choice, ci) => (
                   <button
@@ -193,11 +196,14 @@ export default function ChatBot({ onOrientationPrompt }) {
             <input
               type="text" className="input"
               placeholder="Réponds librement ou utilise les boutons ci-dessus..."
-              value={input} onChange={e => setInput(e.target.value)}
+              value={input}
+              onChange={e => setInput(e.target.value)}
               disabled={loading || !sessionId}
             />
             <button type="submit" className="btn btn-blue"
-              disabled={!input.trim() || loading || !sessionId} style={{ flexShrink: 0 }}>
+              disabled={!input.trim() || loading || !sessionId}
+              style={{ flexShrink: 0 }}
+            >
               <Send size={15} />
             </button>
           </form>

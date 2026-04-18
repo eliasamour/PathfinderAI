@@ -9,7 +9,6 @@ export default function AddressAutocomplete({ value, onChange }) {
   const debounceRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Fermer si clic dehors
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -20,7 +19,6 @@ export default function AddressAutocomplete({ value, onChange }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Sync valeur externe
   useEffect(() => {
     setQuery(value || '');
   }, [value]);
@@ -35,8 +33,6 @@ export default function AddressAutocomplete({ value, onChange }) {
       const data = await res.json();
       const results = (data.features || []).map(f => ({
         label: f.properties.label,
-        city: f.properties.city,
-        postcode: f.properties.postcode,
       }));
       setSuggestions(results);
       setOpen(results.length > 0);
@@ -101,7 +97,8 @@ export default function AddressAutocomplete({ value, onChange }) {
               style={{
                 width: '100%', padding: '10px 14px', background: 'none',
                 border: 'none', cursor: 'pointer', textAlign: 'left',
-                fontFamily: 'var(--font)', borderBottom: i < suggestions.length - 1 ? '1px solid var(--border)' : 'none',
+                fontFamily: 'var(--font)',
+                borderBottom: i < suggestions.length - 1 ? '1px solid var(--border)' : 'none',
                 display: 'flex', alignItems: 'center', gap: 10,
                 transition: 'background 0.1s'
               }}
@@ -109,9 +106,7 @@ export default function AddressAutocomplete({ value, onChange }) {
               onMouseLeave={e => e.currentTarget.style.background = 'none'}
             >
               <MapPin size={13} color="var(--text-muted)" style={{ flexShrink: 0 }} />
-              <div>
-                <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{s.label}</div>
-              </div>
+              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{s.label}</span>
             </button>
           ))}
         </div>
