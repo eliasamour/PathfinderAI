@@ -38,7 +38,7 @@ export default function RegisterPage() {
           <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, background: 'var(--blue-light)', borderRadius: 12, marginBottom: 14 }}>
             <GraduationCap size={26} color="var(--blue)" />
           </div>
-          <h1 style={{ fontSize: 22, fontWeight: 700 }}>OrientIA</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700 }}>PathFinder AI</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>Crée ton compte gratuitement</p>
         </div>
 

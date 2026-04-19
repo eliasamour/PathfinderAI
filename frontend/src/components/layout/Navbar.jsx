@@ -28,7 +28,7 @@ export default function Navbar() {
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <GraduationCap size={22} color="var(--blue)" />
-          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.3px' }}>OrientIA</span>
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.3px' }}>PathFinder AI</span>
         </div>
 
         {/* Nav links */}
