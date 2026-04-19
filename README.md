@@ -1,6 +1,6 @@
-# OrientIA — AI-Powered Student Orientation App
+# PathFinder AI — AI-Powered Student Orientation App
 
-OrientIA is a personalized orientation assistant for French students. It combines real Parcoursup 2026 data, a custom scoring algorithm, and Google Gemini AI to recommend the best academic pathways based on each student's profile.
+PathFinder AI is a personalized orientation assistant for French students. It combines real Parcoursup 2026 data, a custom scoring algorithm, and Google Gemini AI to recommend the best academic pathways based on each student's profile.
 
 ---
 
